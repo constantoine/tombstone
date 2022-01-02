@@ -1,0 +1,4 @@
+name: Tombstone
+version: '${project.version}'
+main: xyz.lalivre.tombstone.Tombstone
+api-version: 1.18
