@@ -64,6 +64,7 @@ public class DeathEvents implements Listener {
         leftSide.setCustomName("Tombe de " + player.getName());
         leftSide.update();
 
+        event.setDroppedExp(0);
         event.getDrops().clear();
     }
 }
