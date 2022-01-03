@@ -1,5 +1,7 @@
 package xyz.lalivre.tombstone.events;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -11,11 +13,14 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class DeathEvents implements Listener {
@@ -40,6 +45,39 @@ public class DeathEvents implements Listener {
             }
         }
         return loc;
+    }
+
+    public static NamespacedKey expKey(@NotNull JavaPlugin plugin) {
+        return new NamespacedKey(plugin, "experience");
+    }
+
+    public static void lootTombstone(@NotNull PersistentDataContainer container, @NotNull Location location, @NotNull Player player, @NotNull World world, @NotNull JavaPlugin plugin) throws IllegalArgumentException {
+        NamespacedKey expKey = expKey(plugin);
+        if (!container.has(expKey(plugin), PersistentDataType.INTEGER)) {
+            throw new IllegalArgumentException();
+        }
+        PlayerInventory playerInventory = player.getInventory();
+        Integer xp = container.get(expKey, PersistentDataType.INTEGER);
+        assert xp != null;
+        player.giveExp(xp, true);
+        container.remove(expKey);
+        ArrayList<ItemStack> content = new ArrayList<>();
+        for (NamespacedKey key : container.getKeys()) {
+            if (!key.namespace().equals(expKey.namespace())) {
+                continue;
+            }
+            content.add(ItemStack.deserializeBytes(container.get(key, PersistentDataType.BYTE_ARRAY)));
+        }
+        HashMap<Integer, ItemStack> toDrop = playerInventory.addItem(content.toArray(new ItemStack[0]));
+        for (ItemStack stack : toDrop.values()) {
+            world.dropItemNaturally(location.getBlock().getLocation(), stack);
+        }
+    }
+
+    public static void sendError(@NotNull String string, @NotNull JavaPlugin plugin) {
+        plugin.getServer().getConsoleSender().sendMessage(Component.text("[Tombstone]: ").color(NamedTextColor.GOLD).append(
+                Component.text(string).color(NamedTextColor.RED)
+        ));
     }
 
     @EventHandler
