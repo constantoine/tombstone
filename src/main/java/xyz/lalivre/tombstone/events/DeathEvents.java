@@ -53,7 +53,7 @@ public class DeathEvents implements Listener {
 
     public static void lootTombstone(@NotNull PersistentDataContainer container, @NotNull Location location, @NotNull Player player, @NotNull World world, @NotNull JavaPlugin plugin) throws IllegalArgumentException {
         NamespacedKey expKey = expKey(plugin);
-        if (!container.has(expKey(plugin), PersistentDataType.INTEGER)) {
+        if (!container.has(expKey, PersistentDataType.INTEGER)) {
             throw new IllegalArgumentException();
         }
         PlayerInventory playerInventory = player.getInventory();
@@ -67,6 +67,7 @@ public class DeathEvents implements Listener {
                 continue;
             }
             content.add(ItemStack.deserializeBytes(container.get(key, PersistentDataType.BYTE_ARRAY)));
+            container.remove(key);
         }
         HashMap<Integer, ItemStack> toDrop = playerInventory.addItem(content.toArray(new ItemStack[0]));
         for (ItemStack stack : toDrop.values()) {

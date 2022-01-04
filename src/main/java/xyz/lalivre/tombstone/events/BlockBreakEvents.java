@@ -29,7 +29,7 @@ public class BlockBreakEvents implements Listener {
         try {
             DeathEvents.lootTombstone(container, event.getBlock().getLocation(), player, world, this.plugin);
         } catch (IllegalArgumentException exception) {
-            DeathEvents.sendError(String.format("Error destroying tombstone: %s", exception.getMessage()), this.plugin);
+            return;
         }
         event.setDropItems(false);
     }

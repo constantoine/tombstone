@@ -32,7 +32,7 @@ public class InventoryOpenEvents implements Listener {
         try {
             DeathEvents.lootTombstone(container, chest.getBlock().getLocation(), player, world, this.plugin);
         } catch (IllegalArgumentException exception) {
-            DeathEvents.sendError(String.format("Error destroying tombstone: %s", exception.getMessage()), this.plugin);
+            return;
         }
         chest.getBlock().setType(Material.AIR);
     }
