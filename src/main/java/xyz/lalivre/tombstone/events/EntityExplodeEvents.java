@@ -13,11 +13,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
-import java.util.List;
 
 public class EntityExplodeEvents implements Listener {
     private final JavaPlugin plugin;
-
 
     public EntityExplodeEvents(@NotNull JavaPlugin plugin) {
         this.plugin = plugin;
