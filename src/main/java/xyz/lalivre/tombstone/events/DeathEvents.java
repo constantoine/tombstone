@@ -83,7 +83,7 @@ public class DeathEvents implements Listener {
 
     @EventHandler
     public void onPlayerDeath(@NotNull PlayerDeathEvent event) {
-        if (event.getDrops().size() == 0) {
+        if (event.getDrops().isEmpty()) {
             return;
         }
         Player player = event.getPlayer();
