@@ -1,7 +1,5 @@
 package xyz.lalivre.tombstone.events;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -30,6 +28,23 @@ public class DeathEvents implements Listener {
         this.plugin = plugin;
     }
 
+    private static boolean isNearbyCactus(@NotNull Location loc) {
+        final World world = loc.getWorld();
+        if (world.getBlockAt(loc.getBlockX() + 1, loc.getBlockY(), loc.getBlockZ()).getType() == Material.CACTUS) {
+            return true;
+        }
+        if (world.getBlockAt(loc.getBlockX() - 1, loc.getBlockY(), loc.getBlockZ()).getType() == Material.CACTUS) {
+            return true;
+        }
+        if (world.getBlockAt(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() + 1).getType() == Material.CACTUS) {
+            return true;
+        }
+        if (world.getBlockAt(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() - 1).getType() == Material.CACTUS) {
+            return true;
+        }
+        return false;
+    }
+
     @NotNull
     private static Location getNearbyAirBlock(@NotNull Location loc) {
         int radius = 5;
@@ -37,10 +52,14 @@ public class DeathEvents implements Listener {
         for (int y = 0; y < radius; y++) {
             for (int x = 0; x < radius; x++) {
                 for (int z = 0; z < radius; z++) {
-                    Block block = world.getBlockAt((int) loc.getX() + x, (int) loc.getY() + y, (int) loc.getZ() + z);
-                    if (block.getType() == Material.AIR) {
-                        return new Location(world, loc.getX() + x, loc.getY() + y, loc.getZ() + z);
+                    Block block = world.getBlockAt(loc.getBlockX() + x, loc.getBlockY() + y, loc.getBlockZ() + z);
+                    if (block.getType() != Material.AIR) {
+                        continue;
                     }
+                    if (DeathEvents.isNearbyCactus(block.getLocation())) {
+                        continue;
+                    }
+                    return new Location(world, loc.getX() + x, loc.getY() + y, loc.getZ() + z);
                 }
             }
         }
@@ -75,12 +94,6 @@ public class DeathEvents implements Listener {
         }
     }
 
-    public static void sendError(@NotNull String string, @NotNull JavaPlugin plugin) {
-        plugin.getServer().getConsoleSender().sendMessage(Component.text("[Tombstone]: ").color(NamedTextColor.GOLD).append(
-                Component.text(string).color(NamedTextColor.RED)
-        ));
-    }
-
     @EventHandler
     public void onPlayerDeath(@NotNull PlayerDeathEvent event) {
         if (event.getDrops().isEmpty()) {
@@ -88,6 +101,14 @@ public class DeathEvents implements Listener {
         }
         Player player = event.getPlayer();
         Location location = getNearbyAirBlock(player.getLocation());
+        int minHeight = location.getWorld().getMinHeight() + 5;
+        if (location.getBlockY() < minHeight) {
+            location.setY(minHeight);
+        }
+        int maxHeight = location.getWorld().getMaxHeight() - 1;
+        if (location.getBlockY() > maxHeight) {
+            location.setY(maxHeight);
+        }
 
         Block left = location.getBlock();
         left.setType(Material.CHEST);
